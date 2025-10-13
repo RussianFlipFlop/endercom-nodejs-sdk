@@ -138,4 +138,4 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 - [Endercom Platform](https://endercom.io)
 - [Documentation](https://docs.endercom.io)
-- [Issues](https://github.com/endercom/nodejs-sdk/issues)
+- [Issues](https://github.com/endercom-nodejs-sdk/issues)

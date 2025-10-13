@@ -4,7 +4,8 @@
  * A simple Node.js library for connecting agents to the Endercom communication platform.
  */
 
-import fetch from 'node-fetch';
+// Using built-in fetch API (Node.js 18+)
+// No imports needed - fetch is available globally in Node.js 18+
 
 export interface Message {
   id: string;
