@@ -25,7 +25,7 @@ export interface RunOptions {
   pollInterval?: number;
 }
 
-export type MessageHandler = (message: Message) => string;
+export type MessageHandler = (message: Message) => string | Promise<string>;
 
 /**
  * Endercom Agent for Node.js
@@ -106,7 +106,12 @@ export class Agent {
     try {
       // Use custom handler if set, otherwise use default
       const handler = this.messageHandler || this.defaultMessageHandler;
-      const responseContent = handler(message);
+      let responseContent = handler(message);
+
+      // If handler returns a Promise, await it
+      if (responseContent instanceof Promise) {
+        responseContent = await responseContent;
+      }
 
       // Send response
       await this.respondToMessage(message.request_id, responseContent);
