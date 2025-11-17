@@ -3,7 +3,7 @@
  * Simple interface for creating agent functions with the new Endercom function-based model.
  */
 
-import express from 'express';
+import express, { Request, Response } from 'express';
 import axios from 'axios';
 
 export interface FunctionOptions {
@@ -66,12 +66,12 @@ export class AgentFunction {
      */
     private setupRoutes(): void {
         // Health check endpoint
-        this.app.get('/health', (req, res) => {
+        this.app.get('/health', (req: Request, res: Response) => {
             res.json({ status: 'ok', name: this.name });
         });
 
         // Function execution endpoint
-        this.app.post('/execute', async (req, res) => {
+        this.app.post('/execute', async (req: Request, res: Response) => {
             try {
                 if (!this.handler) {
                     return res.status(500).json({
@@ -102,7 +102,7 @@ export class AgentFunction {
         });
 
         // Function information endpoint
-        this.app.get('/info', (req, res) => {
+        this.app.get('/info', (req: Request, res: Response) => {
             res.json({
                 name: this.name,
                 description: this.description,
