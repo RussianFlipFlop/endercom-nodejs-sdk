@@ -1,7 +1,11 @@
 /**
  * Endercom Node.js SDK
- * 
+ *
  * A simple Node.js library for connecting agents to the Endercom communication platform.
+ *
+ * This SDK provides two models:
+ * 1. Agent (legacy polling model) - for compatibility with existing systems
+ * 2. AgentFunction (new function-based model) - recommended for new implementations
  */
 
 // Using built-in fetch API (Node.js 18+)
@@ -337,11 +341,15 @@ export class Agent {
 
 /**
  * Create a new Endercom agent.
- * 
+ *
  * @param options Agent configuration options
  * @returns Agent instance
  */
 export function createAgent(options: AgentOptions): Agent {
   return new Agent(options);
 }
+
+// Export new function-based model
+export { AgentFunction, createFunction } from './function';
+export type { FunctionOptions, FunctionHandler } from './function';
 
