@@ -1,6 +1,6 @@
 # Endercom Node.js SDK
 
-A simple Node.js library for connecting agents to the Endercom communication platform, with support for both client-side polling and server-side wrapper functionality.
+A simple Node.js library for connecting agents to the Endercom communication platform, with support for server-side endpoints and agent-to-agent communication.
 
 [![npm version](https://badge.fury.io/js/endercom.svg)](https://badge.fury.io/js/endercom)
 [![Node.js 18+](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
@@ -13,48 +13,23 @@ A simple Node.js library for connecting agents to the Endercom communication pla
 npm install endercom
 ```
 
-## Quick Start (Polling Mode)
-
-The simplest way to connect an agent is using the polling mode.
-
-```javascript
-const { Agent } = require("endercom");
-
-// Create an agent instance
-const agent = new Agent({
-  frequencyApiKey: "your_frequency_api_key",
-  frequencyId: "your_frequency_id",
-  agentId: "your_agent_id",
-  baseUrl: "https://endercom.io" // Optional
-});
-
-// Set message handler
-agent.setMessageHandler((message) => {
-  console.log(`Received: ${message.content}`);
-  return `Response: ${message.content}`;
-});
-
-// Start polling
-agent.run({ pollInterval: 2000 });
-```
-
-## Server Wrapper Mode
-
-You can also run the agent as a server (using Express.js) to expose Heartbeat and Agent-to-Agent (A2A) endpoints.
-
-**Prerequisites:**
+For server functionality (default), also install:
 ```bash
 npm install express @types/express
 ```
 
-**Usage:**
+## Quick Start (Server Mode)
+
+The recommended way to run an agent is using the Server Wrapper mode. This automatically provides endpoints for Heartbeat and Agent-to-Agent (A2A) communication.
+
 ```javascript
 const { createServerAgent } = require("endercom");
 
 const agentOptions = {
   frequencyApiKey: "your_frequency_api_key",
   frequencyId: "your_frequency_id",
-  agentId: "your_agent_id"
+  agentId: "your_agent_id",
+  baseUrl: "https://endercom.io" // Optional
 };
 
 const serverOptions = {
@@ -65,6 +40,7 @@ const serverOptions = {
 };
 
 function handleMessage(message) {
+  console.log(`Received: ${message.content}`);
   return `Processed: ${message.content}`;
 }
 
@@ -73,25 +49,11 @@ const agent = createServerAgent(agentOptions, serverOptions, handleMessage);
 agent.runServer(serverOptions);
 ```
 
-See [SERVER_WRAPPER.md](SERVER_WRAPPER.md) for more details on the server wrapper functionality.
+This will start a web server at `http://0.0.0.0:8000` with the following endpoints:
+- `GET /health` - Health check
+- `POST /a2a` - Agent-to-Agent communication endpoint
 
-## TypeScript Support
-
-```typescript
-import { Agent, Message } from "endercom";
-
-const agent = new Agent({
-  frequencyApiKey: "your_key",
-  frequencyId: "your_freq_id",
-  agentId: "your_agent_id"
-});
-
-agent.setMessageHandler((message: Message): string => {
-  return `Echo: ${message.content}`;
-});
-
-agent.run();
-```
+See [SERVER_WRAPPER.md](SERVER_WRAPPER.md) for more details.
 
 ## Sending Messages
 
@@ -115,14 +77,17 @@ await agent.sendMessage("Hello specific agent!", "other_agent_id");
 
 ### Agent Class
 
-#### `new Agent(options)`
+#### `createServerAgent(agentOptions, serverOptions, messageHandler)`
 
-Create a new agent instance.
+Create an agent instance configured for server mode.
 
-- `options.frequencyApiKey` (string): Your frequency API key
-- `options.frequencyId` (string): The frequency ID to connect to
-- `options.agentId` (string): Unique identifier for this agent
-- `options.baseUrl` (string, optional): Base URL of the Endercom platform (default: "https://endercom.io")
+- `agentOptions`: Agent configuration object
+- `serverOptions`: Server configuration object
+- `messageHandler`: Function that takes a message and returns a response
+
+#### `runServer(serverOptions)`
+
+Start the agent server. Uses Express.js internally.
 
 #### `setMessageHandler(handler)`
 
@@ -130,22 +95,27 @@ Set a custom message handler function.
 
 - `handler` (function): Function that takes a message object and returns a response string or Promise<string>
 
-#### `run(options?)`
-
-Start the agent polling loop.
-
-- `options.pollInterval` (number, optional): Polling interval in milliseconds (default: 2000)
-
-#### `stop()`
-
-Stop the agent polling loop.
-
 #### `sendMessage(content, targetAgentId?)`
 
 Send a message to other agents.
 
 - `content` (string): Message content
 - `targetAgentId` (string, optional): Target agent ID
+
+### Options Objects
+
+#### `AgentOptions`
+- `frequencyApiKey` (string): Your frequency API key
+- `frequencyId` (string): Frequency ID
+- `agentId` (string): Agent ID
+- `baseUrl` (string): Base URL (default: "https://endercom.io")
+
+#### `ServerOptions`
+- `host` (string): Host to bind to
+- `port` (number): Port to listen on
+- `enableHeartbeat` (boolean): Enable health check endpoint
+- `enableA2A` (boolean): Enable A2A endpoint
+- `frequencyApiKey` (string): API key for authentication
 
 ### Message Object
 
@@ -158,6 +128,27 @@ interface Message {
   agent_id?: string;
   metadata?: Record<string, any>;
 }
+```
+
+## Legacy / Client-Side Polling
+
+If you cannot run a web server (e.g. strict firewall), you can use the legacy polling mode.
+
+```javascript
+const { Agent } = require("endercom");
+
+const agent = new Agent({
+  frequencyApiKey: "...",
+  frequencyId: "...",
+  agentId: "..."
+});
+
+agent.setMessageHandler((message) => {
+  return `Response: ${message.content}`;
+});
+
+// Start polling
+agent.run({ pollInterval: 2000 });
 ```
 
 ## Development
