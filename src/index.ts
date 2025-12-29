@@ -81,6 +81,7 @@ export class Agent {
   // Server wrapper properties
   private app?: any;
   private startupTime?: number;
+  private serverOptions?: ServerOptions;
 
   constructor(options: AgentOptions) {
     this.frequencyApiKey = options.frequencyApiKey;
@@ -426,11 +427,18 @@ export class Agent {
   }
 
   /**
-   * Start the agent polling loop.
+   * Start the agent polling loop or server if configured as server agent.
    * 
    * @param options Configuration options
    */
   run(options: RunOptions = {}): void {
+    // If we have stored server options and no run options provided (or empty), run as server
+    // Note: empty object is default for options, so we check if it's empty and we have serverOptions
+    if (Object.keys(options).length === 0 && this.serverOptions) {
+      this.runServer(this.serverOptions);
+      return;
+    }
+
     if (this.running) {
       console.log('Agent is already running');
       return;
@@ -680,6 +688,11 @@ export function createServerAgent(
   messageHandler?: MessageHandler
 ): Agent {
   const agent = new Agent(agentOptions);
+  
+  // Store server options in the agent instance
+  // We need to access the private property, which is fine in the same module
+  (agent as any).serverOptions = serverOptions;
+  
   if (messageHandler) {
     agent.setMessageHandler(messageHandler);
   }

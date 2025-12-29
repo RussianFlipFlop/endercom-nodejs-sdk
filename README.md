@@ -52,7 +52,7 @@ function handleMessage(message) {
 
 // Create and run server agent
 const agent = createServerAgent(agentOptions, serverOptions, handleMessage);
-agent.runServer(serverOptions);
+agent.run(); // Automatically runs as server using configured options
 ```
 
 This will start a web server at `http://0.0.0.0:8000` with the following endpoints:
